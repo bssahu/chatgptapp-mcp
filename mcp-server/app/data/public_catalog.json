@@ -1,0 +1,74 @@
+[
+  {
+    "product_id": "PUB-001",
+    "name": "Apex Runner Pro",
+    "description": "Lightweight running shoes with breathable mesh and cushioned sole for daily training.",
+    "price": 129.99,
+    "category": "Footwear",
+    "public_image_url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800",
+    "availability": "in_stock"
+  },
+  {
+    "product_id": "PUB-002",
+    "name": "Trailblazer Backpack 28L",
+    "description": "Durable daypack with laptop sleeve and hydration compatibility.",
+    "price": 89.5,
+    "category": "Luggage",
+    "public_image_url": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800",
+    "availability": "in_stock"
+  },
+  {
+    "product_id": "PUB-003",
+    "name": "Pulse Wireless Headphones",
+    "description": "ANC over-ear headphones with 30-hour battery and fold-flat design.",
+    "price": 199.0,
+    "category": "Electronics",
+    "public_image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
+    "availability": "in_stock"
+  },
+  {
+    "product_id": "PUB-004",
+    "name": "Orbit Smartwatch S3",
+    "description": "Fitness tracking, GPS, sleep insights, and water resistance to 50m.",
+    "price": 249.99,
+    "category": "Wearables",
+    "public_image_url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800",
+    "availability": "low_stock"
+  },
+  {
+    "product_id": "PUB-005",
+    "name": "Summit Winter Jacket",
+    "description": "Insulated shell with windproof panels and removable hood.",
+    "price": 179.0,
+    "category": "Apparel",
+    "public_image_url": "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800",
+    "availability": "in_stock"
+  },
+  {
+    "product_id": "PUB-006",
+    "name": "Morning Brew Coffee Maker",
+    "description": "Programmable drip coffee maker with thermal carafe.",
+    "price": 69.99,
+    "category": "Home",
+    "public_image_url": "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800",
+    "availability": "in_stock"
+  },
+  {
+    "product_id": "PUB-007",
+    "name": "Studio Yoga Mat",
+    "description": "Non-slip 6mm mat with alignment lines for studio or home practice.",
+    "price": 42.0,
+    "category": "Fitness",
+    "public_image_url": "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=800",
+    "availability": "in_stock"
+  },
+  {
+    "product_id": "PUB-008",
+    "name": "Nomad Travel Mug 16oz",
+    "description": "Vacuum insulated stainless mug that fits standard cup holders.",
+    "price": 28.5,
+    "category": "Drinkware",
+    "public_image_url": "https://images.unsplash.com/photo-1517256064527-09d73e05e09e?w=800",
+    "availability": "in_stock"
+  }
+]

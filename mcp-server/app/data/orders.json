@@ -1,0 +1,44 @@
+[
+  {
+    "order_id": "ORD-1001",
+    "user_id": "user-001",
+    "status": "shipped",
+    "placed_at": "2026-04-18T10:12:00Z",
+    "delivery_eta": "2026-05-05",
+    "tracking_url": "https://example.com/track/ORD-1001",
+    "items": [
+      {"sku": "PUB-001", "name": "Apex Runner Pro", "qty": 1},
+      {"sku": "PUB-008", "name": "Nomad Travel Mug 16oz", "qty": 2}
+    ]
+  },
+  {
+    "order_id": "ORD-1002",
+    "user_id": "user-001",
+    "status": "processing",
+    "placed_at": "2026-04-28T14:40:00Z",
+    "delivery_eta": "2026-05-08",
+    "tracking_url": "https://example.com/track/ORD-1002",
+    "items": [{"sku": "MEM-103", "name": "Vertex Member Smartwatch", "qty": 1}]
+  },
+  {
+    "order_id": "ORD-2001",
+    "user_id": "user-002",
+    "status": "delivered",
+    "placed_at": "2026-03-02T09:05:00Z",
+    "delivery_eta": "2026-03-15",
+    "tracking_url": "https://example.com/track/ORD-2001",
+    "items": [{"sku": "PUB-003", "name": "Pulse Wireless Headphones", "qty": 1}]
+  },
+  {
+    "order_id": "ORD-2002",
+    "user_id": "user-002",
+    "status": "out_for_delivery",
+    "placed_at": "2026-04-29T18:22:00Z",
+    "delivery_eta": "2026-05-03",
+    "tracking_url": "https://example.com/track/ORD-2002",
+    "items": [
+      {"sku": "MEM-104", "name": "Atelier Signature Headphones", "qty": 1},
+      {"sku": "MEM-105", "name": "Grand Tour Premium Travel Kit", "qty": 1}
+    ]
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "product_id": "MEM-101",
+    "name": "Elite Carbon Runner X",
+    "description": "Member-exclusive premium running shoes with carbon plate and race-day upper.",
+    "member_price": 189.99,
+    "msrp": 229.99,
+    "category": "Footwear",
+    "public_image_url": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800",
+    "availability": "member_only"
+  },
+  {
+    "product_id": "MEM-102",
+    "name": "Heritage Limited Backpack",
+    "description": "Limited edition waxed canvas backpack with brass hardware — members first.",
+    "member_price": 149.0,
+    "msrp": 199.0,
+    "category": "Luggage",
+    "public_image_url": "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=800",
+    "availability": "member_only"
+  },
+  {
+    "product_id": "MEM-103",
+    "name": "Vertex Member Smartwatch",
+    "description": "Members-only smartwatch colorway with extended warranty and premium band.",
+    "member_price": 219.0,
+    "msrp": 279.0,
+    "category": "Wearables",
+    "public_image_url": "https://images.unsplash.com/photo-1434493789847-28d66df45e0e?w=800",
+    "availability": "member_only"
+  },
+  {
+    "product_id": "MEM-104",
+    "name": "Atelier Signature Headphones",
+    "description": "Luxury headphones tuned for studio clarity — member catalog exclusive.",
+    "member_price": 349.0,
+    "msrp": 429.0,
+    "category": "Electronics",
+    "public_image_url": "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=800",
+    "availability": "member_only"
+  },
+  {
+    "product_id": "MEM-105",
+    "name": "Grand Tour Premium Travel Kit",
+    "description": "Curated carry-on essentials bundle with leather organizer — member pricing.",
+    "member_price": 95.0,
+    "msrp": 135.0,
+    "category": "Travel",
+    "public_image_url": "https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?w=800",
+    "availability": "member_only"
+  }
+]

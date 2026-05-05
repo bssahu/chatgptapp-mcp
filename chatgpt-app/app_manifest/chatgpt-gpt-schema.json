@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Documentation-only snippet for tool intents; MCP remains the source of truth.",
+  "title": "Shopping assistant MCP intents",
+  "type": "object",
+  "properties": {
+    "mcp_server_url": {
+      "type": "string",
+      "description": "HTTPS URL to Streamable HTTP MCP, e.g. https://f255-2601-646-8f03-e320-d497-4433-9d0-799f.ngrok-free.app/mcp"
+    },
+    "public_tools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "search_public_catalog",
+          "ask_public_product_question"
+        ]
+      }
+    },
+    "private_tools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "get_order_status",
+          "search_member_catalog",
+          "ask_private_member_question"
+        ]
+      }
+    },
+    "oauth_login_url": {
+      "type": "string",
+      "description": "https://f255-2601-646-8f03-e320-d497-4433-9d0-799f.ngrok-free.app/auth/login"
+    }
+  },
+  "required": ["mcp_server_url"]
+}

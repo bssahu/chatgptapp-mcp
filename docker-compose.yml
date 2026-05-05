@@ -1,0 +1,53 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: shopping_mcp
+
+  qdrant:
+    # Keep in sync with qdrant-client major.minor in mcp-server/requirements.txt
+    image: qdrant/qdrant:v1.17.1
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DB: shopping_mcp
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_PUBLIC_COLLECTION: public_catalog_docs
+      QDRANT_PRIVATE_COLLECTION: private_member_docs
+      # PUBLIC_BASE_URL: set only in repo-root .env (env_file above). Not interpolated here so
+      # ngrok URLs are not replaced by localhost when compose substitution sees an empty shell env.
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      MOCK_OAUTH_CLIENT_ID: ${MOCK_OAUTH_CLIENT_ID:-demo-client}
+      MOCK_OAUTH_CLIENT_SECRET: ${MOCK_OAUTH_CLIENT_SECRET:-demo-secret}
+      SESSION_COOKIE_NAME: ${SESSION_COOKIE_NAME:-mcp_session}
+    depends_on:
+      - mongodb
+      - qdrant
+
+volumes:
+  mongo_data:
+  qdrant_data:
