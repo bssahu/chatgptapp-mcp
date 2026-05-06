@@ -57,4 +57,4 @@ sequenceDiagram
 
 ## ChatGPT session caching
 
-After login, the user (or connector configuration) should **cache the bearer token** for subsequent MCP requests. The MCP server remains stateless regarding ChatGPT; **MongoDB** holds authoritative session rows keyed by `access_token`.
+After login, OAuth-capable connectors can **cache and replay bearer tokens automatically** for subsequent MCP requests. The MCP server remains stateless regarding ChatGPT; **MongoDB** holds authoritative session rows keyed by `access_token`.

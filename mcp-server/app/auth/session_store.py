@@ -38,6 +38,8 @@ async def store_oauth_code(
     user_id: str,
     redirect_uri: str,
     client_id: str,
+    code_challenge: str | None = None,
+    code_challenge_method: str | None = None,
     ttl_seconds: int = 600,
 ) -> None:
     db = get_db()
@@ -47,6 +49,8 @@ async def store_oauth_code(
         "user_id": user_id,
         "redirect_uri": redirect_uri,
         "client_id": client_id,
+        "code_challenge": code_challenge,
+        "code_challenge_method": code_challenge_method,
         "created_at": now,
         "expires_at": now + timedelta(seconds=ttl_seconds),
     }

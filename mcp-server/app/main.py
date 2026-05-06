@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.auth.context import reset_access_token, set_access_token
-from app.auth.oauth import router as oauth_router
+from app.auth.oauth import oauth_well_known_router, router as oauth_router
 from app.auth import session_store
 from app.mcp.server import mcp
 from app.utils.logging import configure_logging
@@ -36,6 +36,7 @@ app = FastAPI(
 )
 
 app.include_router(oauth_router)
+app.include_router(oauth_well_known_router)
 
 
 @app.middleware("http")

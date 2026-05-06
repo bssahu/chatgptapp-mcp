@@ -12,17 +12,18 @@ https://<your-ngrok-host>/mcp
 
 Use **Streamable HTTP** MCP transport at that path (FastMCP default under FastAPI mount).
 
-### “Does not implement OAuth” (ChatGPT / Cursor MCP UI)
+### OAuth auto-login (ChatGPT / Cursor MCP UI)
 
-If **Authentication** is set to **OAuth**, the host tries to **discover** OAuth metadata (for example `/.well-known/oauth-protected-resource` and related MCP OAuth endpoints). **This POC does not register FastMCP’s OAuth provider**, so discovery fails even though mock login exists at `/auth/login`.
+This POC now exposes OAuth discovery endpoints required by MCP hosts:
 
-**What to do here**
+- `/.well-known/oauth-authorization-server`
+- `/.well-known/oauth-protected-resource`
 
-1. Set **Authentication** to **None** / **No auth** (not OAuth).
-2. Use MCP URL **`https://<ngrok-host>/mcp`** (include the **`/mcp`** path unless your UI says it adds it automatically).
-3. For **private tools**, open `/auth/login` in a browser, copy the **bearer token**, then paste it wherever the connector stores headers / secrets (often “Custom headers” or “Access token”), or pass `access_token` on tool calls if supported.
+Use **Authentication = OAuth** in the connector, with MCP URL:
 
-Full MCP-standard OAuth discovery would require wiring FastMCP / MCP SDK **OAuth authorization server** integration—not just the mock routes in this repo.
+`https://<ngrok-host>/mcp/`
+
+When a private tool is called, the host can open the OAuth dialog, complete login at `/auth/authorize`, exchange code at `/auth/token`, then automatically attach `Authorization: Bearer ...` on subsequent MCP calls.
 
 ### ngrok free tier interstitial
 

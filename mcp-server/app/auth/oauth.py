@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import logging
 import secrets
+from base64 import urlsafe_b64encode
 from datetime import UTC, datetime
+from hashlib import sha256
 from typing import Annotated
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Form, HTTPException, Query, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -16,6 +19,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+oauth_well_known_router = APIRouter(tags=["oauth"])
 
 
 def _base() -> str:
@@ -38,11 +42,15 @@ HTML_LOGIN = """<!DOCTYPE html>
 </head>
 <body>
   <h1>Mock OAuth2 Login</h1>
-  <p>This POC simulates an OAuth2 authorization server. Pick a demo user to obtain tokens stored in MongoDB.</p>
+  <p>This POC simulates an OAuth2 authorization server. Pick a demo user to approve this app.</p>
   <form method="post" action="{base}/auth/authorize">
+    <input type="hidden" name="response_type" value="{response_type}"/>
     <input type="hidden" name="client_id" value="{client_id}"/>
     <input type="hidden" name="redirect_uri" value="{redirect_uri}"/>
     <input type="hidden" name="state" value="{state}"/>
+    <input type="hidden" name="scope" value="{scope}"/>
+    <input type="hidden" name="code_challenge" value="{code_challenge}"/>
+    <input type="hidden" name="code_challenge_method" value="{code_challenge_method}"/>
     <label for="user_id">Demo user</label>
     <select name="user_id" id="user_id">
       <option value="user-001">user-001 (Alex)</option>
@@ -56,6 +64,20 @@ HTML_LOGIN = """<!DOCTYPE html>
 """
 
 
+def _oauth_metadata() -> dict[str, object]:
+    base = _base()
+    return {
+        "issuer": base,
+        "authorization_endpoint": f"{base}/auth/authorize",
+        "token_endpoint": f"{base}/auth/token",
+        "response_types_supported": ["code"],
+        "grant_types_supported": ["authorization_code"],
+        "token_endpoint_auth_methods_supported": ["none", "client_secret_post"],
+        "code_challenge_methods_supported": ["S256", "plain"],
+        "scopes_supported": ["profile", "orders:read", "catalog:member:read"],
+    }
+
+
 @router.get("/login", response_class=HTMLResponse)
 async def auth_login(
     client_id: str | None = Query(default=None),
@@ -66,7 +88,44 @@ async def auth_login(
     cid = client_id or settings.mock_oauth_client_id
     redir = redirect_uri or f"{_base()}/auth/callback"
     st = state or secrets.token_urlsafe(16)
-    html = HTML_LOGIN.format(base=_base(), client_id=cid, redirect_uri=redir, state=st)
+    html = HTML_LOGIN.format(
+        base=_base(),
+        response_type="code",
+        client_id=cid,
+        redirect_uri=redir,
+        state=st,
+        scope="profile orders:read catalog:member:read",
+        code_challenge="",
+        code_challenge_method="",
+    )
+    return HTMLResponse(html)
+
+
+@router.get("/authorize", response_class=HTMLResponse)
+async def authorize_get(
+    response_type: str = Query(default="code"),
+    client_id: str = Query(default=settings.mock_oauth_client_id),
+    redirect_uri: str = Query(default=""),
+    state: str = Query(default=""),
+    scope: str = Query(default=""),
+    code_challenge: str | None = Query(default=None),
+    code_challenge_method: str | None = Query(default=None),
+) -> HTMLResponse:
+    """OAuth2 authorization endpoint (interactive approval screen)."""
+    if response_type != "code":
+        raise HTTPException(status_code=400, detail="unsupported response_type")
+    redir = redirect_uri.strip() or f"{_base()}/auth/callback"
+    st = state or secrets.token_urlsafe(16)
+    html = HTML_LOGIN.format(
+        base=_base(),
+        response_type=response_type,
+        client_id=client_id.strip(),
+        redirect_uri=redir,
+        state=st,
+        scope=scope,
+        code_challenge=code_challenge or "",
+        code_challenge_method=code_challenge_method or "",
+    )
     return HTMLResponse(html)
 
 
@@ -75,18 +134,32 @@ async def auth_authorize(
     user_id: Annotated[str, Form()],
     client_id: Annotated[str, Form()],
     redirect_uri: Annotated[str, Form()],
+    response_type: Annotated[str, Form()] = "code",
     state: Annotated[str, Form()] = "",
+    scope: Annotated[str | None, Form()] = None,
+    code_challenge: Annotated[str | None, Form()] = None,
+    code_challenge_method: Annotated[str | None, Form()] = None,
 ) -> RedirectResponse:
     """Issue authorization code and redirect to redirect_uri or local callback."""
+    if response_type != "code":
+        raise HTTPException(status_code=400, detail="unsupported response_type")
     code = secrets.token_urlsafe(32)
+    method = (code_challenge_method or "").strip()
+    if method and method not in {"plain", "S256"}:
+        raise HTTPException(status_code=400, detail="unsupported code_challenge_method")
     await session_store.store_oauth_code(
         code=code,
         user_id=user_id.strip(),
         redirect_uri=redirect_uri.strip(),
         client_id=client_id.strip(),
+        code_challenge=(code_challenge or "").strip() or None,
+        code_challenge_method=method or None,
     )
     sep = "&" if "?" in redirect_uri else "?"
-    location = f"{redirect_uri}{sep}code={code}&state={state}"
+    query = {"code": code, "state": state}
+    if scope:
+        query["scope"] = scope
+    location = f"{redirect_uri}{sep}{urlencode(query)}"
     return RedirectResponse(location, status_code=302)
 
 
@@ -148,22 +221,35 @@ async def auth_token(
     code: Annotated[str, Form()],
     redirect_uri: Annotated[str, Form()],
     client_id: Annotated[str, Form()],
-    client_secret: Annotated[str, Form()],
+    client_secret: Annotated[str | None, Form()] = None,
+    code_verifier: Annotated[str | None, Form()] = None,
 ) -> JSONResponse:
     """OAuth2 token endpoint (authorization_code)."""
     if grant_type != "authorization_code":
         raise HTTPException(status_code=400, detail="unsupported grant_type")
-    if client_id != settings.mock_oauth_client_id:
+    if client_id.strip() != settings.mock_oauth_client_id:
         raise HTTPException(status_code=401, detail="invalid client")
-    if client_secret != settings.mock_oauth_client_secret:
+    if client_secret and client_secret.strip() != settings.mock_oauth_client_secret:
         raise HTTPException(status_code=401, detail="invalid client")
     doc = await session_store.consume_oauth_code(code)
     if not doc:
         raise HTTPException(status_code=400, detail="invalid or expired code")
     if doc.get("redirect_uri") != redirect_uri:
         raise HTTPException(status_code=400, detail="redirect_uri mismatch")
-    if doc.get("client_id") != client_id:
+    if doc.get("client_id") != client_id.strip():
         raise HTTPException(status_code=400, detail="client_id mismatch")
+    stored_challenge = doc.get("code_challenge")
+    stored_method = doc.get("code_challenge_method")
+    if stored_challenge:
+        if not code_verifier:
+            raise HTTPException(status_code=400, detail="missing code_verifier")
+        if stored_method == "S256":
+            digest = sha256(code_verifier.encode("utf-8")).digest()
+            expected = urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
+        else:
+            expected = code_verifier
+        if expected != stored_challenge:
+            raise HTTPException(status_code=400, detail="invalid code_verifier")
     user_id = str(doc["user_id"])
     _session_id, access_token, expires_at = await session_store.create_session(user_id=user_id)
     return JSONResponse(
@@ -171,6 +257,26 @@ async def auth_token(
             "access_token": access_token,
             "token_type": "Bearer",
             "expires_in": int((expires_at - datetime.now(tz=UTC)).total_seconds()),
+        }
+    )
+
+
+@oauth_well_known_router.get("/.well-known/oauth-authorization-server")
+async def oauth_authorization_server_metadata() -> JSONResponse:
+    """OAuth Authorization Server Metadata (RFC 8414)."""
+    return JSONResponse(_oauth_metadata())
+
+
+@oauth_well_known_router.get("/.well-known/oauth-protected-resource")
+async def oauth_protected_resource_metadata() -> JSONResponse:
+    """Protected Resource Metadata for MCP hosts."""
+    base = _base()
+    return JSONResponse(
+        {
+            "resource": f"{base}/mcp/",
+            "authorization_servers": [base],
+            "bearer_methods_supported": ["header"],
+            "scopes_supported": ["profile", "orders:read", "catalog:member:read"],
         }
     )
 

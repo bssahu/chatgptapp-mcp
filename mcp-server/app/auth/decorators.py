@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from urllib.parse import urlencode
 from typing import Any
 
 from app.auth.context import current_access_token
@@ -10,9 +11,18 @@ from app.config import settings
 
 
 def auth_required_payload() -> dict[str, Any]:
+    base = settings.public_base_url.rstrip("/")
+    query = urlencode(
+        {
+            "response_type": "code",
+            "client_id": settings.mock_oauth_client_id,
+            "redirect_uri": f"{base}/auth/callback",
+            "scope": "profile orders:read catalog:member:read",
+        }
+    )
     return {
         "requires_auth": True,
-        "auth_url": f"{settings.public_base_url.rstrip('/')}/auth/login",
+        "auth_url": f"{base}/auth/authorize?{query}",
         "message": (
             "Please authenticate to access order status or member-only catalog."
         ),
